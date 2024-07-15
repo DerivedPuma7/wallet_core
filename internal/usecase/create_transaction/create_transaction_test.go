@@ -1,8 +1,11 @@
 package createtransaction
 import (
 	"testing"
+	"time"
 
 	"github.com.br/derivedpuma7/wallet-core/internal/entity"
+	"github.com.br/derivedpuma7/wallet-core/internal/event"
+	"github.com.br/derivedpuma7/wallet-core/pkg/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -47,7 +50,10 @@ func TestCreateTransactionUseCase_Execute(t *testing.T) {
 	account2, _ := entity.NewAccount(client2)
 	account2.Credit(1000)
 	mockAccount, mockTransaction := createGatewaysMock(account1, account2)
-	uc := NewCreateTransactionUseCase(mockTransaction, mockAccount)
+	dispatcher := events.NewEventDispatcher()
+	event := event.NewTransactionCreated(time.Now())
+
+	uc := NewCreateTransactionUseCase(mockTransaction, mockAccount, dispatcher, event)
 
 	output, err := uc.Execute(
 		CreateTransactionInputDto{
