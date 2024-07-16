@@ -23,9 +23,9 @@ func (s *TransactionDbTestSuite) SetupSuite() {
 	db, err := sql.Open("sqlite3", ":memory")
 	s.Nil(err)
 	s.db = db
-	db.Exec("CREATE TABLE clients (id string, name string, email string, createdAt date, updatedAt date)")
-	db.Exec("CREATE TABLE accounts(id string, clientId string, balance float, createdAt date, updatedAt date)")
-	db.Exec("CREATE TABLE transactions(id string, accountIdFrom string, accountIdTo string, amount float, createdAt date)")
+	db.Exec("CREATE TABLE clients (id varchar(255), name varchar(255), email varchar(255), createdAt date, updatedAt date)")
+	db.Exec("CREATE TABLE accounts(id varchar(255), clientId varchar(255), balance float, createdAt date, updatedAt date)")
+	db.Exec("CREATE TABLE transactions(id varchar(255), accountIdFrom varchar(255), accountIdTo varchar(255), amount float, createdAt date)")
 	s.SetupAccount()
 	s.transactionDb = NewTransactionDb(db)
 }
