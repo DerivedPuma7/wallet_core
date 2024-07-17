@@ -1,27 +1,27 @@
-POST http://localhost:3000/clients HTTP/1.1
+POST http://localhost:8080/clients HTTP/1.1
 Content-Type: application/json
 
 {
-  "name": "gabriel",
-  "email": "gabriel@gmail.com"
+  "name": "mafe",
+  "email": "mafe@gmail.com"
 }
 
 ###
 
-POST http://localhost:3000/accounts HTTP/1.1
+POST http://localhost:8080/accounts HTTP/1.1
 Content-Type: application/json
 
 {
-  "clientId": "864aff88-6400-4bf8-980b-5293c1b610b2"
+  "clientId": "468d90a6-0d07-48e9-939a-7d5cb0f225de"
 }
 
 ###
 
-POST http://localhost:3000/transactions HTTP/1.1
+POST http://localhost:8080/transactions HTTP/1.1
 Content-Type: application/json
 
 {
-  "accountIDFrom": "ddc50c2e-de6d-4084-8091-fae473be5abc",
-  "accountIDTo": "5a1d74b7-4962-4a79-bc33-d5538c8c0c99",
+  "accountIDFrom": "94a18c82-3767-429f-9dd2-d9995eb08129",
+  "accountIDTo": "bc3319ad-dd18-4c2a-93a8-3ba0ff80504a",
   "amount": 50
 }
