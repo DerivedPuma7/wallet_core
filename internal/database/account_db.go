@@ -4,11 +4,14 @@ import (
 	"database/sql"
 
 	"github.com.br/derivedpuma7/wallet-core/internal/entity"
+	"github.com.br/derivedpuma7/wallet-core/internal/gateway"
 )
 
 type AccountDb struct {
 	DB *sql.DB
 }
+
+var _ gateway.AccountGateway = (*AccountDb)(nil)
 
 func NewAccountDb(db *sql.DB) *AccountDb {
 	return &AccountDb{
@@ -66,4 +69,17 @@ func (a *AccountDb) Save(account *entity.Account) error {
 		return err
 	}
 	return nil
+}
+
+func (a *AccountDb) UpdateBalance(account *entity.Account) error {
+	stmt, err := a.DB.Prepare("UPDATE accounts SET balance = ? WHERE id = ?")
+  if err != nil {
+    return err
+  }
+  defer stmt.Close()
+  _, err = stmt.Exec(account.Balance, account.ID)
+  if err != nil {
+    return err
+  }
+  return nil
 }
