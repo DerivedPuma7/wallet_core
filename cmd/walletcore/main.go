@@ -8,13 +8,16 @@ import (
 
 	"github.com.br/derivedpuma7/wallet-core/internal/database"
 	"github.com.br/derivedpuma7/wallet-core/internal/event"
+	"github.com.br/derivedpuma7/wallet-core/internal/event/handler"
 	createaccount "github.com.br/derivedpuma7/wallet-core/internal/usecase/create_account"
 	createclient "github.com.br/derivedpuma7/wallet-core/internal/usecase/create_client"
 	createtransaction "github.com.br/derivedpuma7/wallet-core/internal/usecase/create_transaction"
 	"github.com.br/derivedpuma7/wallet-core/internal/web"
 	"github.com.br/derivedpuma7/wallet-core/internal/web/webserver"
 	"github.com.br/derivedpuma7/wallet-core/pkg/events"
+	"github.com.br/derivedpuma7/wallet-core/pkg/kafka"
 	"github.com.br/derivedpuma7/wallet-core/pkg/uow"
+	ckafka "github.com/confluentinc/confluent-kafka-go/kafka"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -25,9 +28,15 @@ func main() {
   }
   defer db.Close()
 
+  configMap := ckafka.ConfigMap{
+    "bootstrap.servers": "kafka:9094",
+    "group.id": "wallet",
+  }
+  kafkaProducer := kafka.NewKafkaProducer(&configMap)
+
   eventDispatcher := events.NewEventDispatcher()
   transactionCreatedEvent := event.NewTransactionCreated(time.Now())
-  // eventDispatcher.Register("TransactionCreated", handler)
+  eventDispatcher.Register("TransactionCreated", handler.NewTransactionCreatedKafkaHandler(kafkaProducer))
 
   clientDb := database.NewClientDb(db)
   accountDb := database.NewAccountDb(db)
@@ -45,7 +54,9 @@ func main() {
   createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
   createTransactionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 
-  webserver := webserver.NewWebServer(":3000")
+  httpPort := ":8080"
+
+  webserver := webserver.NewWebServer(httpPort)
   clientHandler := web.NewWebClientHandler(*createClientUseCase)
   accountHandler := web.NewWebAccountHandler(*createAccountUseCase)
   transactionHandler := web.NewWebTransactionHandler(*createTransactionUseCase)
@@ -54,5 +65,6 @@ func main() {
   webserver.AddHandler("/accounts", accountHandler.CreateAccount)
   webserver.AddHandler("/transactions", transactionHandler.CreateTransaction)
 
+  fmt.Println("server is running on: http://localhost:", httpPort)
   webserver.Start()
 }
