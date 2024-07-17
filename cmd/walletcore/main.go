@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com.br/derivedpuma7/wallet-core/internal/web"
 	"github.com.br/derivedpuma7/wallet-core/internal/web/webserver"
 	"github.com.br/derivedpuma7/wallet-core/pkg/events"
+	"github.com.br/derivedpuma7/wallet-core/pkg/uow"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -29,11 +31,19 @@ func main() {
 
   clientDb := database.NewClientDb(db)
   accountDb := database.NewAccountDb(db)
-  transactionDb := database.NewTransactionDb(db)
+  
+  ctx := context.Background()
+  uow := uow.NewUow(ctx, db)
+  uow.Register("AccountDb", func(tx *sql.Tx) interface{} {
+    return database.NewAccountDb(db)
+  })
+  uow.Register("TransactionDb", func(tx *sql.Tx) interface{} {
+    return database.NewTransactionDb(db)
+  })
 
   createClientUseCase := createclient.NewCreateClientUseCase(clientDb)
   createAccountUseCase := createaccount.NewCreateAccountUseCase(accountDb, clientDb)
-  createTransactionUseCase := createtransaction.NewCreateTransactionUseCase(transactionDb, accountDb, eventDispatcher, transactionCreatedEvent)
+  createTransactionUseCase := createtransaction.NewCreateTransactionUseCase(uow, eventDispatcher, transactionCreatedEvent)
 
   webserver := webserver.NewWebServer(":3000")
   clientHandler := web.NewWebClientHandler(*createClientUseCase)
