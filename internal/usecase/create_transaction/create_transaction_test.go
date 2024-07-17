@@ -1,48 +1,23 @@
 package createtransaction
+
 import (
 	"testing"
 	"time"
 
 	"github.com.br/derivedpuma7/wallet-core/internal/entity"
 	"github.com.br/derivedpuma7/wallet-core/internal/event"
+	"github.com.br/derivedpuma7/wallet-core/internal/usecase/mocks"
 	"github.com.br/derivedpuma7/wallet-core/pkg/events"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-type AccountGatewayMock struct {
-	mock.Mock
-}
-
-func (mock *AccountGatewayMock) FindById(id string) (*entity.Account, error) {
-	args := mock.Called(id)
-	return args.Get(0).(*entity.Account), args.Error(1)
-}
-
-func (mock *AccountGatewayMock) Save(account *entity.Account) error {
-	args := mock.Called(account)
-	return args.Error(0)
-}
-
-func (mock *AccountGatewayMock) UpdateBalance(account *entity.Account) error {
-	args := mock.Called(account)
-	return args.Error(0)
-}
-
-type TransactionGatewayMock struct {
-	mock.Mock
-}
-
-func (mock *TransactionGatewayMock) Create(transaction *entity.Transaction) error {
-	args := mock.Called(transaction)
-	return args.Error(0)
-}
-
-func createGatewaysMock(account1 *entity.Account, account2 *entity.Account) (*AccountGatewayMock, *TransactionGatewayMock) {
-	mockAccount := &AccountGatewayMock{}
+func createGatewaysMock(account1 *entity.Account, account2 *entity.Account) (*mocks.AccountGatewayMock, *mocks.TransactionGatewayMock) {
+	mockAccount := &mocks.AccountGatewayMock{}
 	mockAccount.On("FindById", account1.ID).Return(account1, nil)
 	mockAccount.On("FindById", account2.ID).Return(account2, nil)
-	mockTransaction := &TransactionGatewayMock{}
+	mockTransaction := &mocks.TransactionGatewayMock{}
 	mockTransaction.On("Create", mock.Anything).Return(nil)
 	return mockAccount, mockTransaction
 }
