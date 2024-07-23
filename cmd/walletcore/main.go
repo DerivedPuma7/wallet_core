@@ -27,6 +27,7 @@ func main() {
     panic(err)
   }
   defer db.Close()
+  startDatabase(db)
 
   configMap := ckafka.ConfigMap{
     "bootstrap.servers": "kafka:29092",
@@ -69,4 +70,26 @@ func main() {
 
   fmt.Println("server is running on: http://localhost:", httpPort)
   webserver.Start()
+}
+
+func startDatabase(db *sql.DB) {
+  sqls := []string{
+    "CREATE TABLE IF NOT EXISTS clients (id varchar(255), name varchar(255), email varchar(255), createdAt date, updatedAt date);",
+    "CREATE TABLE IF NOT EXISTS accounts(id varchar(255), clientId varchar(255), balance float, createdAt date, updatedAt date);",
+    "CREATE TABLE IF NOT EXISTS transactions(id varchar(255), accountIdFrom varchar(255), accountIdTo varchar(255), amount float, createdAt date);",
+    "TRUNCATE TABLE clients",
+    "TRUNCATE TABLE accounts",
+    "TRUNCATE TABLE transactions",
+    "INSERT INTO clients (id, name, email, createdAt, updatedAt) VALUES ('005c9780-ddd8-4834-87f2-2fc98620892e', 'client 1', 'client1@test.com', current_timestamp, current_timestamp)",
+    "INSERT INTO clients (id, name, email, createdAt, updatedAt) VALUES ('17374f16-1ac1-4f86-9b6a-1726da0c5327', 'client 2', 'client2@test.com', current_timestamp, current_timestamp)",
+    "INSERT INTO accounts (id, clientId, balance, createdAt, updatedAt) VALUES('fab64237-6e11-4152-80ac-2cdd8a5a86dd', '005c9780-ddd8-4834-87f2-2fc98620892e', 10000, current_timestamp, current_timestamp)",
+    "INSERT INTO accounts (id, clientId, balance, createdAt, updatedAt) VALUES('e67b0ed1-7b13-45d7-ad20-1c9682842635', '17374f16-1ac1-4f86-9b6a-1726da0c5327', 10000, current_timestamp, current_timestamp)",
+  }
+
+  for _, sql := range sqls {
+    _, err := db.Exec(sql)
+    if err != nil {
+      panic(err)
+    }
+  }
 }
